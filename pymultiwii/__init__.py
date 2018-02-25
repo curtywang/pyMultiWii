@@ -52,7 +52,7 @@ class MultiWii:
 
 
     # !IMPORTANT! set to your min and max based on ESC mode in Cleanflight
-    def convertThrottlePercentToRaw(self, percentOutOf100, THROTTLE_MIN = 10, THROTTLE_MAX = 600):
+    def convertThrottlePercentToRaw(self, percentOutOf100, THROTTLE_MIN = 1000, THROTTLE_MAX = 2000):
         value_range = THROTTLE_MAX - THROTTLE_MIN
         return (THROTTLE_MIN + (percentOutOf100/100)*value_range)
 
@@ -162,21 +162,21 @@ class MultiWii:
       s_struct((uint8_t*)&att,6);
       break;
     """
-    def arm(self):
+    def arm(self, MIN_THROTTLE = 10):
         timer = 0
         start = time.time()
         while timer < 0.5:
-            data = [1500,1500,2000,1000]
+            data = [1500,1500,2000,MIN_THROTTLE]
             self.sendCMD(8,MultiWii.SET_RAW_RC,data)
             time.sleep(0.05)
             timer = timer + (time.time() - start)
             start =  time.time()
 
-    def disarm(self):
+    def disarm(self, MIN_THROTTLE = 10):
         timer = 0
         start = time.time()
         while timer < 0.5:
-            data = [1500,1500,1000,1000]
+            data = [1500,1500,1000,MIN_THROTTLE]
             self.sendCMD(8,MultiWii.SET_RAW_RC,data)
             time.sleep(0.05)
             timer = timer + (time.time() - start)

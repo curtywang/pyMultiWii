@@ -31,3 +31,12 @@ if __name__ == "__main__":
 
     except Exception as error:
         print("Error on Main: "+str(error))
+
+"""
+# data = [roll, pitch, yaw, throttle, aux1-4]
+data = [1500,1500,1500,1200,1000,1000,1000,1000]
+            
+board.sendCMDreceiveATT(16,MultiWii.SET_RAW_RC,data)
+            
+print(board.attitude)
+"""
