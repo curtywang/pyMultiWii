@@ -8,6 +8,9 @@ setup(
     author="Aldo Vargas",
     license="GPL",
     packages=['pymultiwii'],
-
+    install_requires=[
+        'matplotlib',
+        'pyserial'
+    ],
 
 )

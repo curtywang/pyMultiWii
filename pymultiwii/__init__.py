@@ -15,7 +15,7 @@ __modified_by__ = "Curtis Wang, ycwang@u.northwestern.edu, for Python 3.5+"
 __comments__ = "Tested only on Cleanflight on SP F3 flight controllers, using map AERT1234"
 
 
-import serial, time, struct
+import serial, time, struct, math
 
 
 class MultiWii:
@@ -54,15 +54,19 @@ class MultiWii:
     # !IMPORTANT! set to your min and max based on ESC mode in Cleanflight
     def convertThrottlePercentToRaw(self, percentOutOf100, THROTTLE_MIN = 1000, THROTTLE_MAX = 2000):
         value_range = THROTTLE_MAX - THROTTLE_MIN
-        return (THROTTLE_MIN + (percentOutOf100/100)*value_range)
+        return math.floor(THROTTLE_MIN + (percentOutOf100/100)*value_range)
 
     def convertSignedPercentToRPYValue(self, signed_percent_out_of_100, rpy_min = 1000, rpy_max = 2000, rpy_neutral = 1500):
         if (signed_percent_out_of_100 < 0):
             value_range = rpy_neutral - rpy_min
-            return (rpy_neutral + (signed_percent_out_of_100/100)*value_range)
+            return math.floor(rpy_neutral + (signed_percent_out_of_100/100)*value_range)
         elif (signed_percent_out_of_100 >= 0):
             value_range = rpy_max - rpy_neutral
-            return (rpy_neutral + (signed_percent_out_of_100/100)*value_range)
+            return math.floor(rpy_neutral + (signed_percent_out_of_100/100)*value_range)
+
+    def setRawRC(self, roll, pitch, yaw, throttle):
+        data = [roll,pitch,throttle,yaw,1000,1000,1000,1000]
+        self.sendCMD(16,MultiWii.SET_RAW_RC,data)
 
     """Class initialization"""
     def __init__(self, serPort):
@@ -99,27 +103,13 @@ class MultiWii:
     """Function for sending a command to the board"""
     def sendCMD(self, data_length, code, data):
         checksum = 0
-        total_data = ['$', 'M', '<', data_length, code] + data
+        total_data = [b'$', b'M', b'<', data_length, code] + data
         for i in struct.pack('<2B%dH' % len(data), *total_data[3:len(total_data)]):
-            checksum = checksum ^ ord(i)
+            checksum = checksum ^ i #ord(i)
         total_data.append(checksum)
-        try:
-            b = None
-            b = self.ser.write(struct.pack('<3c2B%dHB' % len(data), *total_data))
-        except Exception as error:
-            #print "\n\nError in sendCMD."
-            #print "("+str(error)+")\n\n"
-            pass
+        b = None
+        b = self.ser.write(struct.pack('<3c2B%dHB' % len(data), *total_data))
 
-    """Function for sending a command to the board and receive attitude"""
-    """
-    Modification required on Multiwii firmware to Protocol.cpp in evaluateCommand:
-    case MSP_SET_RAW_RC:
-      s_struct_w((uint8_t*)&rcSerial,16);
-      rcSerialCount = 50; // 1s transition 
-      s_struct((uint8_t*)&att,6);
-      break;
-    """
     def sendCMDreceiveATT(self, data_length, code, data):
         checksum = 0
         total_data = ['$', 'M', '<', data_length, code] + data
@@ -162,26 +152,33 @@ class MultiWii:
       s_struct((uint8_t*)&att,6);
       break;
     """
-    def arm(self, MIN_THROTTLE = 10):
+    def arm(self, MIN_THROTTLE = 1000):
         timer = 0
         start = time.time()
-        while timer < 0.5:
-            data = [1500,1500,2000,MIN_THROTTLE]
-            self.sendCMD(8,MultiWii.SET_RAW_RC,data)
+        while timer < 2.0:
+            self.setRawRC(1500, 1500, 2000, MIN_THROTTLE)
             time.sleep(0.05)
             timer = timer + (time.time() - start)
             start =  time.time()
 
-    def disarm(self, MIN_THROTTLE = 10):
+    def disarm(self, MIN_THROTTLE = 1000):
         timer = 0
         start = time.time()
-        while timer < 0.5:
-            data = [1500,1500,1000,MIN_THROTTLE]
-            self.sendCMD(8,MultiWii.SET_RAW_RC,data)
+        while timer < 1.0:
+            self.setRawRC(1500, 1500, 1000, MIN_THROTTLE)
             time.sleep(0.05)
             timer = timer + (time.time() - start)
             start =  time.time()
     
+    def autoLevelAtPercentThrottle(self, percentOutOf100 = 50):
+        timer = 0
+        start = time.time()
+        while timer < 0.5:
+            self.setRawRC(1500, 1500, 1500, self.convertThrottlePercentToRaw(percentOutOf100))
+            time.sleep(0.05)
+            timer = timer + (time.time() - start)
+            start =  time.time()
+
     def setPID(self,pd):
         nd=[]
         for i in np.arange(1,len(pd),2):

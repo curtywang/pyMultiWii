@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{95f5c1bc-a289-42d4-9c5b-de479a570b7d}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>setup.py</StartupFile>
+    <StartupFile>tests\test-arm-disarm.py</StartupFile>
     <SearchPath>demo\;pymultiwii\;tests\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
