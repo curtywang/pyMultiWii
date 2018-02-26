@@ -50,6 +50,7 @@ class MultiWii:
     SET_MOTOR = 214
     DEBUG = 254
 
+    AUX = [1000,1000,1000,1000]
 
     # !IMPORTANT! set to your min and max based on ESC mode in Cleanflight
     def convertThrottlePercentToRaw(self, percentOutOf100, THROTTLE_MIN = 1000, THROTTLE_MAX = 2000):
@@ -65,8 +66,20 @@ class MultiWii:
             return math.floor(rpy_neutral + (signed_percent_out_of_100/100)*value_range)
 
     def setRawRC(self, roll, pitch, yaw, throttle):
-        data = [roll,pitch,throttle,yaw,1000,1000,1000,1000]
+        data = [roll,pitch,throttle,yaw,AUX[0],AUX[1],AUX[2],AUX[3]]
         self.sendCMD(16,MultiWii.SET_RAW_RC,data)
+
+    def setRCneutral(self, throttle = 1100):
+        data = [1500,1500,throttle,1500,AUX[0],AUX[1],AUX[2],AUX[3]]
+        self.sendCMD(16,MultiWii.SET_RAW_RC,data)
+
+    def setAuxValue(self, aux1, aux2, aux3, aux4):
+        self.AUX = [aux1, aux2, aux3, aux4]
+        self.setRCneutral()
+
+    def enableAuxMode(self, which_aux_indexed_at_0 = 0, enable_value = 1900):
+        self.AUX[which_aux_indexed_at_0] = enable_value
+        self.setRCneutral()
 
     """Class initialization"""
     def __init__(self, serPort):
