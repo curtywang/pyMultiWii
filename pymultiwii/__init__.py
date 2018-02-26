@@ -66,11 +66,11 @@ class MultiWii:
             return math.floor(rpy_neutral + (signed_percent_out_of_100/100)*value_range)
 
     def setRawRC(self, roll, pitch, yaw, throttle):
-        data = [roll,pitch,throttle,yaw,AUX[0],AUX[1],AUX[2],AUX[3]]
+        data = [roll,pitch,throttle,yaw,self.AUX[0],self.AUX[1],self.AUX[2],self.AUX[3]]
         self.sendCMD(16,MultiWii.SET_RAW_RC,data)
 
     def setRCneutral(self, throttle = 1100):
-        data = [1500,1500,throttle,1500,AUX[0],AUX[1],AUX[2],AUX[3]]
+        data = [1500,1500,throttle,1500,self.AUX[0],self.AUX[1],self.AUX[2],self.AUX[3]]
         self.sendCMD(16,MultiWii.SET_RAW_RC,data)
 
     def setAuxValue(self, aux1, aux2, aux3, aux4):
