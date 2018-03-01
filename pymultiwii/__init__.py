@@ -66,7 +66,7 @@ class MultiWii:
             value_range = rpy_max - rpy_neutral
             return math.floor(rpy_neutral + (signed_percent_out_of_100/100)*value_range)
 
-    def setRawRC(self, roll = 1500, pitch = 1500, yaw = 1500, throttle = self.THROTTLE):
+    def setRawRC(self, roll = 1500, pitch = 1500, yaw = 1500, throttle = 1100):
         self.THROTTLE = throttle
         data = [roll,pitch,throttle,yaw,self.AUX[0],self.AUX[1],self.AUX[2],self.AUX[3]]
         self.sendCMD(16,MultiWii.SET_RAW_RC,data)
